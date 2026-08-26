@@ -1,0 +1,46 @@
+# ═══════════════════════════════════════════════════════════════
+# Cabide Imperial — configuração da Netlify
+#
+# Este arquivo faz duas coisas: diz onde estão as funções do
+# servidor, e traduz as URLs bonitas que o site já usa (/api/...)
+# para o endereço real de cada função (/.netlify/functions/...).
+# Sem isso, o index.html e o admin.html precisariam ser reescritos
+# para chamar /.netlify/functions/criar-pix em vez de /api/criar-pix
+# — com isso, nenhum dos dois precisa mudar uma linha.
+# ═══════════════════════════════════════════════════════════════
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# A ordem importa: a Netlify usa o primeiro redirecionamento que
+# bater. Por isso /api/conta/* e /api/admin/* vêm ANTES da regra
+# geral /api/* — senão a geral capturaria tudo primeiro e nunca
+# chegaria a rota certa (ex.: /api/conta/entrar viraria uma busca
+# por uma função chamada "conta/entrar", que não existe).
+
+[[redirects]]
+  from = "/api/conta/:nome"
+  to = "/.netlify/functions/conta-:nome"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/:nome"
+  to = "/.netlify/functions/admin-:nome"
+  status = 200
+
+[[redirects]]
+  from = "/api/:nome"
+  to = "/.netlify/functions/:nome"
+  status = 200
+
+# Cabeçalhos de segurança básicos para todo o site.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"

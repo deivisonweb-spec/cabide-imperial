@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel · Cabide Imperial</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prata&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Mesmas primitivas do site — ver index.html para a explicação */
+  --rosa-100:#FEE5DE; --rosa-200:#F6D0C6; --rosa-300:#E7B9AC; --rosa-500:#BD8373;
+  --vinho-700:#845056; --vinho-800:#69353D; --vinho-900:#501E27; --vinho-950:#370813;
+  --ouro-200:#EED6B5; --ouro-500:#B28D55; --ouro-600:#9B7334; --ouro-700:#815806; --ouro-950:#291900;
+  --areia-50:#FCF5F2; --areia-200:#E1D8D4; --areia-500:#9C918C; --areia-700:#6A5E59;
+  --verde-50:#F2F9F3; --verde-700:#436C4C; --ambar-50:#FCF6EB; --ambar-800:#5E4101;
+  --rubi-50:#FFF4F4; --rubi-700:#954449;
+
+  /* Semânticas */
+  --fundo:var(--areia-50); --fundo-rose:var(--rosa-100); --fundo-rose-forte:var(--rosa-200);
+  --superficie:#FFFFFF;
+  --texto:var(--vinho-950); --texto-suave:var(--vinho-700); --texto-tenue:var(--areia-700);
+  --texto-claro:var(--rosa-100); --texto-sobre-ouro:var(--ouro-950);
+  --marca:var(--vinho-900); --marca-clara:var(--vinho-800); --rose:var(--rosa-500);
+  --acento:var(--ouro-500); --acento-forte:var(--ouro-600); --acento-texto:var(--ouro-700);
+  --acento-claro:var(--ouro-200);
+  --metal:linear-gradient(100deg,#815806 0%,#C8A776 28%,#EED6B5 46%,#B28D55 62%,#815806 100%);
+  --borda:rgba(155,115,52,.26); --borda-campo:var(--areia-500); --foco:var(--ouro-600);
+  --pago-fundo:var(--verde-50); --pago-texto:var(--verde-700);
+  --espera-fundo:var(--ambar-50); --espera-texto:var(--ambar-800);
+  --recusa-fundo:var(--rubi-50); --recusa-texto:var(--rubi-700);
+  --perigo:var(--rubi-700);
+  --veu:rgba(55,8,19,.55);
+  --sombra:0 18px 40px -22px rgba(55,8,19,.42);
+  --raio:2px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--texto);font-family:'Jost',system-ui,sans-serif;font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Prata',Georgia,serif;font-weight:400;margin:0;line-height:1.2}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+img{max-width:100%;display:block}
+:focus-visible{outline:2px solid var(--foco);outline-offset:2px}
+.wrap{width:min(100% - 32px,1100px);margin-inline:auto}
+
+.topo{background:var(--marca);color:var(--texto-claro);padding:14px 0;position:sticky;top:0;z-index:20}
+.topo-in{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.topo h1{font-size:1.2rem;color:var(--texto-claro)}
+.topo .sub{font-size:.62rem;letter-spacing:.26em;text-transform:uppercase;color:var(--acento-claro)}
+.topo a,.topo button{color:var(--texto-claro);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase}
+.topo .acoes{display:flex;gap:16px;align-items:center}
+
+.abas{display:flex;gap:8px;padding:22px 0 20px;flex-wrap:wrap}
+.aba{padding:10px 20px;border:1px solid var(--borda);border-radius:100px;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--texto-suave);background:#fff}
+.aba.on{background:var(--marca);border-color:var(--marca);color:var(--texto-claro)}
+
+.cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.kpi{background:#fff;border:1px solid var(--borda);border-radius:var(--raio);padding:16px 18px}
+.kpi b{display:block;font-family:'Prata',serif;font-size:1.6rem;color:var(--marca);font-weight:400}
+.kpi span{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--texto-suave)}
+
+.barra{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 26px;border-radius:var(--raio);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:500;border:1px solid transparent;transition:.25s}
+.btn-principal{background:var(--marca);color:var(--texto-claro)}
+.btn-principal:hover{background:var(--marca-clara)}
+.btn-ouro{background:var(--metal);color:var(--texto-sobre-ouro);background-size:200% 100%}
+.btn-ouro:hover{background-position:100% 0}
+.btn-linha{border-color:var(--acento);color:var(--marca);background:#fff}
+.btn-linha:hover{background:var(--acento);color:#fff}
+.btn-perigo{border:1px solid var(--recusa-texto);color:var(--recusa-texto);background:#fff}
+.btn-perigo:hover{background:var(--recusa-texto);color:#fff}
+.btn-mini{padding:8px 14px;font-size:.66rem}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn-largo{width:100%}
+
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.peca{background:#fff;border:1px solid var(--borda);border-radius:var(--raio);overflow:hidden;display:flex;flex-direction:column}
+.peca-foto{aspect-ratio:3/4;background:var(--fundo-rose);position:relative}
+.peca-foto img{width:100%;height:100%;object-fit:cover}
+.peca-foto .semfoto{position:absolute;inset:0;display:grid;place-items:center;color:var(--texto-suave);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+.peca-corpo{padding:14px;flex:1;display:flex;flex-direction:column;gap:4px}
+.peca-corpo h3{font-size:1rem}
+.peca-corpo .meta{font-size:.72rem;color:var(--texto-suave);letter-spacing:.06em}
+.peca-corpo .preco{font-size:1.05rem;color:var(--marca);margin-top:4px}
+.peca-acoes{display:flex;gap:6px;padding:0 14px 14px}
+.peca-acoes .btn{flex:1}
+.pausada{opacity:.55}
+.marcas{position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.marca{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;border-radius:100px;background:var(--marca);color:var(--texto-claro)}
+.marca.alerta{background:var(--recusa-texto)}
+.marca.pausa{background:var(--texto-suave)}
+
+.tabela{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--borda)}
+.tabela th{text-align:left;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--texto-suave);padding:12px;border-bottom:1px solid var(--borda);font-weight:500}
+.tabela td{padding:12px;border-bottom:1px solid var(--borda);font-size:.86rem;vertical-align:top}
+.tabela tr:last-child td{border-bottom:0}
+.selo{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:100px;background:var(--fundo-rose);color:var(--marca-clara);white-space:nowrap}
+.selo.pago{background:var(--pago-fundo);color:var(--pago-texto)}
+.selo.pendente{background:var(--espera-fundo);color:var(--espera-texto)}
+.selo.enviado{background:var(--fundo-rose);color:var(--marca)}
+.selo.entregue{background:var(--pago-fundo);color:var(--pago-texto)}
+.selo.recusado,.selo.cancelado{background:var(--recusa-fundo);color:var(--recusa-texto)}
+
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.campo{display:flex;flex-direction:column;gap:6px}
+.campo.full{grid-column:1/-1}
+.campo label{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--texto-suave)}
+.campo input,.campo select,.campo textarea{padding:12px 14px;border:1px solid var(--borda);background:#fff;border-radius:var(--raio);font-size:.94rem;width:100%}
+.campo textarea{resize:vertical;min-height:92px;font-family:inherit}
+.campo .ajuda{font-size:.72rem;color:var(--texto-suave)}
+
+.modal{position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:16px}
+.modal.on{display:grid}
+.modal-fundo{position:absolute;inset:0;background:rgba(58,32,40,.6)}
+.modal-caixa{position:relative;background:var(--fundo);width:min(760px,100%);max-height:94vh;overflow-y:auto;border-radius:var(--raio);padding:28px;box-shadow:0 40px 80px -40px rgba(58,32,40,.7)}
+.modal-caixa h2{font-size:1.4rem;margin-bottom:18px}
+.fechar{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid var(--borda);font-size:1.1rem;line-height:1;color:var(--marca)}
+
+.fotos-area{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:10px}
+.foto-item{position:relative;aspect-ratio:3/4;border:1px solid var(--borda);border-radius:var(--raio);overflow:hidden;background:var(--fundo-rose)}
+.foto-item img{width:100%;height:100%;object-fit:cover}
+.foto-item button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(253,248,245,.94);color:var(--recusa-texto);font-size:.9rem;line-height:1}
+.foto-item .capa{position:absolute;bottom:0;left:0;right:0;background:rgba(74,32,41,.82);color:var(--texto-claro);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:3px}
+.enviar-foto{border:1px dashed var(--borda);border-radius:var(--raio);aspect-ratio:3/4;display:grid;place-items:center;text-align:center;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--texto-suave);background:#fff}
+.enviar-foto:hover{border-color:var(--acento);color:var(--marca)}
+
+.linha-tam{display:grid;grid-template-columns:1fr 96px auto;gap:8px;align-items:center;margin-bottom:8px}
+.linha-tam input{padding:10px 12px}
+.tirar{color:var(--recusa-texto);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px}
+.cores-area{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.cor-nome{width:118px;padding:7px 9px;border:1px solid var(--borda-campo);border-radius:var(--raio);font-size:.82rem}
+.cor-item{position:relative}
+.cor-item input[type=color]{width:44px;height:44px;padding:0;border:1px solid var(--borda);border-radius:50%;background:none;cursor:pointer}
+.cor-item button{position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid var(--borda);font-size:.75rem;line-height:1;color:var(--recusa-texto)}
+
+.vazio{text-align:center;padding:60px 20px;color:var(--texto-suave);background:#fff;border:1px solid var(--borda);border-radius:var(--raio)}
+.vazio h3{color:var(--marca);margin-bottom:8px}
+.aviso{background:var(--fundo-rose);border-radius:var(--raio);padding:14px 16px;font-size:.84rem;color:var(--marca-clara);margin-bottom:20px;line-height:1.55}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);background:var(--marca);color:var(--texto-claro);padding:13px 24px;border-radius:100px;font-size:.84rem;z-index:80;transition:transform .4s cubic-bezier(.34,1.4,.64,1),opacity .3s;opacity:0;max-width:calc(100% - 32px);text-align:center}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.entrada{max-width:400px;margin:12vh auto;background:#fff;border:1px solid var(--borda);border-radius:var(--raio);padding:32px}
+.entrada h2{font-size:1.4rem;margin-bottom:6px}
+.entrada p{color:var(--texto-suave);font-size:.88rem;margin:0 0 20px}
+.carregando{text-align:center;padding:60px;color:var(--texto-suave)}
+
+@media (max-width:700px){
+  .campos{grid-template-columns:1fr}
+  .tabela thead{display:none}
+  .tabela,.tabela tbody,.tabela tr,.tabela td{display:block;width:100%}
+  .tabela tr{border-bottom:1px solid var(--borda);padding:6px 0}
+  .tabela td{border:0;padding:6px 12px}
+  .tabela td::before{content:attr(data-rot);display:block;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--texto-suave)}
+  .modal-caixa{padding:20px}
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="wrap topo-in">
+    <div>
+      <h1>Painel da loja</h1>
+      <span class="sub">Cabide Imperial</span>
+    </div>
+    <div class="acoes" id="acoesTopo"></div>
+  </div>
+</header>
+
+<main class="wrap" id="tela">
+  <div class="carregando">Carregando…</div>
+</main>
+
+<div class="modal" id="modalPeca">
+  <div class="modal-fundo" data-fecha></div>
+  <div class="modal-caixa">
+    <button class="fechar" data-fecha aria-label="Fechar">×</button>
+    <div id="formPeca"></div>
+  </div>
+</div>
+
+<div class="modal" id="modalPedido">
+  <div class="modal-fundo" data-fecha></div>
+  <div class="modal-caixa" style="max-width:520px">
+    <button class="fechar" data-fecha aria-label="Fechar">×</button>
+    <div id="formPedido"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="entradaFoto" accept="image/*" multiple hidden>
+
+<script>
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const brl=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const paraCampo=v=>(v===null||v===undefined||v==='')?'':Number(v).toFixed(2).replace('.',',');
+const CATEGORIAS=[['vestidos','Vestidos'],['saias','Saias'],['blusas','Blusas'],
+  ['conjuntos','Conjuntos'],['camisas','Camisas'],['plus','Plus Size']];
+
+const app={admin:null,aba:'pecas',produtos:[],pedidos:[],resumo:null,rascunho:null};
+
+function avisar(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._id); t._id=setTimeout(()=>t.classList.remove('on'),2800);
+}
+async function api(rota,opcoes={}){
+  const r=await fetch(rota,{credentials:'include',...opcoes});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.erro||'Não deu certo. Tente de novo.');
+  return d;
+}
+const escapar=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ── Entrada ─────────────────────────────────────────────────── */
+async function iniciar(){
+  try{
+    const d=await api('/api/conta/eu');
+    if(!d.cliente.admin) return telaSemAcesso(d.cliente);
+    app.admin=d.cliente;
+    $('#acoesTopo').innerHTML=`<a href="/index.html" target="_blank">Ver a loja</a><button id="sair">Sair</button>`;
+    $('#sair').onclick=async()=>{ await api('/api/conta/sair',{method:'POST'}); location.reload(); };
+    await carregar();
+  }catch(_){ telaEntrar(); }
+}
+
+function telaEntrar(){
+  $('#tela').innerHTML=`
+    <div class="entrada">
+      <h2>Entrar no painel</h2>
+      <p>Use a mesma conta que você criou na loja.</p>
+      <div class="campos">
+        <div class="campo full"><label for="e_email">E-mail</label><input id="e_email" type="email" autocomplete="email"></div>
+        <div class="campo full"><label for="e_senha">Senha</label><input id="e_senha" type="password" autocomplete="current-password"></div>
+      </div>
+      <button class="btn btn-principal btn-largo" style="margin-top:20px" id="e_entrar">Entrar</button>
+    </div>`;
+  const enviar=async()=>{
+    const b=$('#e_entrar'); b.disabled=true; b.textContent='Entrando…';
+    try{
+      await api('/api/conta/entrar',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:$('#e_email').value.trim(),senha:$('#e_senha').value})});
+      location.reload();
+    }catch(e){ avisar(e.message); b.disabled=false; b.textContent='Entrar'; }
+  };
+  $('#e_entrar').onclick=enviar;
+  $('#e_senha').onkeydown=e=>{ if(e.key==='Enter') enviar(); };
+}
+
+function telaSemAcesso(c){
+  $('#tela').innerHTML=`
+    <div class="entrada">
+      <h2>Sem acesso ao painel</h2>
+      <p>A conta <strong>${escapar(c.email)}</strong> existe, mas ainda não é administradora.</p>
+      <div class="aviso" style="margin:0">Abra o SQL Editor do Neon e rode:
+        <div style="margin-top:8px;font-family:ui-monospace,monospace;font-size:.78rem;background:#fff;padding:10px;border-radius:2px;word-break:break-all">update clientes set admin = true where email = '${escapar(c.email)}';</div>
+      </div>
+      <button class="btn btn-linha btn-largo" style="margin-top:16px" onclick="location.reload()">Já rodei, recarregar</button>
+    </div>`;
+}
+
+/* ── Carregar dados ──────────────────────────────────────────── */
+async function carregar(){
+  try{
+    const [p,o]=await Promise.all([api('/api/admin/produtos'),api('/api/admin/pedidos')]);
+    app.produtos=p.produtos; app.pedidos=o.pedidos; app.resumo=o.resumo;
+  }catch(e){ avisar(e.message); }
+  pintar();
+}
+
+function pintar(){
+  $('#tela').innerHTML=`
+    <div class="abas">
+      <button class="aba ${app.aba==='pecas'?'on':''}" data-aba="pecas">Peças (${app.produtos.length})</button>
+      <button class="aba ${app.aba==='pedidos'?'on':''}" data-aba="pedidos">Pedidos (${app.pedidos.length})</button>
+    </div>
+    <div id="conteudo"></div>`;
+  $$('[data-aba]').forEach(b=>b.onclick=()=>{ app.aba=b.dataset.aba; pintar(); });
+  app.aba==='pecas'?abaPecas():abaPedidos();
+}
+
+/* ── Peças ───────────────────────────────────────────────────── */
+function abaPecas(){
+  const semFoto=app.produtos.filter(p=>!(p.fotos||[]).length).length;
+  $('#conteudo').innerHTML=`
+    ${semFoto?`<div class="aviso"><strong>${semFoto} ${semFoto===1?'peça está':'peças estão'} sem foto.</strong> Na vitrine elas aparecem com um cartão desenhado no lugar da imagem — funciona, mas vende bem menos.</div>`:''}
+    <div class="barra">
+      <span style="font-size:.8rem;color:var(--texto-suave)">${app.produtos.filter(p=>p.ativo).length} no ar · ${app.produtos.filter(p=>!p.ativo).length} pausadas</span>
+      <button class="btn btn-ouro" id="nova">Nova peça</button>
+    </div>
+    <div class="grade" id="gradePecas"></div>`;
+  $('#nova').onclick=()=>abrirPeca(null);
+
+  const g=$('#gradePecas');
+  if(!app.produtos.length){
+    g.outerHTML=`<div class="vazio"><h3>Nenhuma peça cadastrada</h3>
+      <p>Clique em “Nova peça” para colocar a primeira na arara.</p></div>`;
+    return;
+  }
+  g.innerHTML=app.produtos.map(p=>{
+    const fotos=p.fotos||[]; const est=p.estoque||{};
+    const total=Object.values(est).reduce((s,v)=>s+(Number(v)||0),0);
+    const semEstoque=Object.keys(est).length>0 && total===0;
+    return `<article class="peca ${p.ativo?'':'pausada'}">
+      <div class="peca-foto">
+        ${fotos[0]?`<img src="${escapar(fotos[0])}" alt="${escapar(p.nome)}" loading="lazy">`:'<span class="semfoto">sem foto</span>'}
+        <div class="marcas">
+          ${p.novo?'<span class="marca">Novo</span>':''}
+          ${p.preco_de?'<span class="marca">Oferta</span>':''}
+          ${semEstoque?'<span class="marca alerta">Esgotada</span>':''}
+          ${p.ativo?'':'<span class="marca pausa">Pausada</span>'}
+        </div>
+      </div>
+      <div class="peca-corpo">
+        <h3>${escapar(p.nome)}</h3>
+        <span class="meta">${(CATEGORIAS.find(c=>c[0]===p.categoria)||[,p.categoria])[1]}${p.tecido?' · '+escapar(p.tecido):''}</span>
+        <span class="meta">${Object.keys(est).length?`Estoque: ${total} peça${total===1?'':'s'}`:'Estoque não controlado'}</span>
+        <span class="preco">${brl(p.preco)}</span>
+      </div>
+      <div class="peca-acoes">
+        <button class="btn btn-linha btn-mini" data-editar="${p.id}">Editar</button>
+        <button class="btn btn-linha btn-mini" data-pausar="${p.id}">${p.ativo?'Pausar':'Ativar'}</button>
+      </div>
+    </article>`;
+  }).join('');
+
+  $$('[data-editar]').forEach(b=>b.onclick=()=>abrirPeca(app.produtos.find(p=>p.id==b.dataset.editar)));
+  $$('[data-pausar]').forEach(b=>b.onclick=async()=>{
+    const p=app.produtos.find(x=>x.id==b.dataset.pausar);
+    b.disabled=true;
+    try{
+      await salvarPeca({...p,ativo:!p.ativo},true);
+      avisar(p.ativo?'Peça pausada — saiu da vitrine':'Peça no ar de novo');
+      await carregar();
+    }catch(e){ avisar(e.message); b.disabled=false; }
+  });
+}
+
+/* ── Formulário da peça ──────────────────────────────────────── */
+function abrirPeca(p){
+  app.rascunho = p ? JSON.parse(JSON.stringify(p)) : {
+    nome:'',categoria:'vestidos',preco:'',preco_de:'',tecido:'',descricao:'',
+    tams:[],cores:[],fotos:[],estoque:{},novo:true,destaque:5,ativo:true
+  };
+
+  $('#modalPeca').classList.add('on');
+  pintarFormPeca();
+}
+function fecharModais(){ $$('.modal').forEach(m=>m.classList.remove('on')); }
+document.addEventListener('click',e=>{ if(e.target.closest('[data-fecha]')) fecharModais(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') fecharModais(); });
+
+function pintarFormPeca(){
+  const d=app.rascunho;
+  const tams=d.tams||[];
+  $('#formPeca').innerHTML=`
+    <h2>${d.id?'Editar peça':'Nova peça'}</h2>
+    <div class="campos">
+      <div class="campo full"><label for="f_nome">Nome da peça</label>
+        <input id="f_nome" value="${escapar(d.nome)}" placeholder="Vestido Midi Ester"></div>
+      <div class="campo"><label for="f_cat">Categoria</label>
+        <select id="f_cat">${CATEGORIAS.map(([v,n])=>`<option value="${v}" ${d.categoria===v?'selected':''}>${n}</option>`).join('')}</select></div>
+      <div class="campo"><label for="f_tecido">Tecido</label>
+        <input id="f_tecido" value="${escapar(d.tecido||'')}" placeholder="Crepe de seda"></div>
+      <div class="campo"><label for="f_preco">Preço (R$)</label>
+        <input id="f_preco" inputmode="decimal" value="${paraCampo(d.preco)}" placeholder="329,90"></div>
+      <div class="campo"><label for="f_de">Preço antigo (só se estiver em oferta)</label>
+        <input id="f_de" inputmode="decimal" value="${paraCampo(d.preco_de)}" placeholder="389,90"></div>
+      <div class="campo full"><label for="f_desc">Descrição</label>
+        <textarea id="f_desc" placeholder="Conte o caimento, o comprimento e para que ocasião serve.">${escapar(d.descricao||'')}</textarea></div>
+    </div>
+
+    <h3 style="font-size:1rem;margin:26px 0 4px">Fotos</h3>
+    <p class="ajuda" style="font-size:.78rem;color:var(--texto-suave);margin:0">A primeira é a capa. Encolhemos as imagens no seu celular antes de enviar, então pode mandar a foto original.</p>
+    <div class="fotos-area" id="fotosArea"></div>
+
+    <h3 style="font-size:1rem;margin:26px 0 4px">Tamanhos e estoque</h3>
+    <p class="ajuda" style="font-size:.78rem;color:var(--texto-suave);margin:0 0 12px">Deixe a quantidade vazia para não controlar estoque dessa peça.</p>
+    <div id="tamsArea">${tams.map((t,i)=>linhaTam(t,(d.estoque||{})[t],i)).join('')}</div>
+    <button class="btn btn-linha btn-mini" id="addTam">+ tamanho</button>
+
+    <h3 style="font-size:1rem;margin:26px 0 4px">Cores</h3>
+    <div class="cores-area" id="coresArea"></div>
+
+    <div class="campos" style="margin-top:26px">
+      <div class="campo"><label for="f_destaque">Posição na vitrine (0 a 10)</label>
+        <input id="f_destaque" type="number" min="0" max="10" value="${d.destaque??5}">
+        <span class="ajuda">Quanto maior, mais no começo da arara.</span></div>
+      <div class="campo"><label>Etiquetas</label>
+        <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--texto)">
+          <input type="checkbox" id="f_novo" ${d.novo?'checked':''} style="width:auto"> Mostrar selo “Novo”</label>
+        <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--texto)">
+          <input type="checkbox" id="f_ativo" ${d.ativo!==false?'checked':''} style="width:auto"> Visível na loja</label></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:26px;flex-wrap:wrap">
+      <button class="btn btn-principal" style="flex:1;min-width:160px" id="f_salvar">Salvar peça</button>
+      ${d.id?`<button class="btn btn-perigo" id="f_apagar">Apagar</button>`:''}
+    </div>`;
+
+  pintarFotos(); pintarCores();
+  $('#addTam').onclick=()=>{ d.tams=[...(d.tams||[]),'']; pintarFormPeca(); };
+  $('#f_salvar').onclick=async()=>{
+    const b=$('#f_salvar'); b.disabled=true; b.textContent='Salvando…';
+    try{ colher(); await salvarPeca(app.rascunho); fecharModais(); avisar('Peça salva'); await carregar(); }
+    catch(e){ avisar(e.message); b.disabled=false; b.textContent='Salvar peça'; }
+  };
+  const ap=$('#f_apagar');
+  if(ap) ap.onclick=async()=>{
+    if(!confirm(`Apagar “${d.nome}”? Os pedidos antigos continuam guardados, mas a peça some do catálogo.`)) return;
+    try{ await api('/api/admin/produtos?id='+d.id,{method:'DELETE'}); fecharModais(); avisar('Peça apagada'); await carregar(); }
+    catch(e){ avisar(e.message); }
+  };
+  ligarTams();
+}
+
+function linhaTam(t,qtd,i){
+  return `<div class="linha-tam">
+    <input data-tam="${i}" value="${escapar(t)}" placeholder="P, M, 38, 42…">
+    <input data-qtd="${i}" inputmode="numeric" value="${qtd??''}" placeholder="qtd">
+    <button class="tirar" data-tirartam="${i}">tirar</button>
+  </div>`;
+}
+function ligarTams(){
+  $$('[data-tirartam]').forEach(b=>b.onclick=()=>{
+    colher();
+    const i=+b.dataset.tirartam;
+    const nome=app.rascunho.tams[i];
+    app.rascunho.tams.splice(i,1);
+    if(nome) delete app.rascunho.estoque[nome];
+    pintarFormPeca();
+  });
+}
+
+function pintarFotos(){
+  const fotos=app.rascunho.fotos||[];
+  $('#fotosArea').innerHTML=fotos.map((f,i)=>`
+    <div class="foto-item">
+      <img src="${escapar(f)}" alt="">
+      ${i===0?'<span class="capa">Capa</span>':''}
+      <button data-tirarfoto="${i}" aria-label="Remover foto">×</button>
+    </div>`).join('')+
+    `<button class="enviar-foto" id="btEnviarFoto">+ foto</button>`;
+  $('#btEnviarFoto').onclick=()=>$('#entradaFoto').click();
+  $$('[data-tirarfoto]').forEach(b=>b.onclick=()=>{
+    app.rascunho.fotos.splice(+b.dataset.tirarfoto,1); pintarFotos();
+  });
+}
+
+function pintarCores(){
+  const cores=(app.rascunho.cores||[]).map(normalizarCor);
+  app.rascunho.cores=cores;
+  $('#coresArea').innerHTML=cores.map((c,i)=>`
+    <span class="cor-item">
+      <input type="color" value="${c.hex}" data-cor="${i}" aria-label="Tom da cor ${i+1}">
+      <input class="cor-nome" list="tonsSugeridos" value="${escapar(c.nome)}" data-cornome="${i}"
+             placeholder="nome do tom" aria-label="Nome da cor ${i+1}">
+      <button data-tirarcor="${i}" aria-label="Remover cor">×</button>
+    </span>`).join('')+
+    `<button class="btn btn-linha btn-mini" id="addCor">+ cor</button>
+     <datalist id="tonsSugeridos">${Object.values(TONS).map(t=>`<option value="${t.nome}">`).join('')}</datalist>`;
+  $('#addCor').onclick=()=>{ colher(); app.rascunho.cores.push({nome:'Rosé',hex:'#D39E90'}); pintarCores(); };
+  $$('[data-cor]').forEach(i=>i.onchange=()=>{
+    const n=+i.dataset.cor;
+    app.rascunho.cores[n].hex=i.value;
+    // se o nome ainda era o sugerido, acompanha o novo tom
+    const campo=$(`[data-cornome="${n}"]`);
+    if(campo && ehNomeSugerido(campo.value)){ campo.value=nomeDoTom(i.value); app.rascunho.cores[n].nome=campo.value; }
+  });
+  $$('[data-cornome]').forEach(i=>i.oninput=()=>{ app.rascunho.cores[+i.dataset.cornome].nome=i.value; });
+  $$('[data-tirarcor]').forEach(b=>b.onclick=()=>{ colher(); app.rascunho.cores.splice(+b.dataset.tirarcor,1); pintarCores(); });
+}
+
+/* Aceita o formato antigo (só o hex) e o novo ({nome,hex}). Peças
+   cadastradas antes desta versão ganham nome automaticamente. */
+function normalizarCor(c){
+  if(c && typeof c==='object') return {nome:c.nome||nomeDoTom(c.hex||'#D39E90'), hex:c.hex||'#D39E90'};
+  const hex=/^#[0-9a-f]{6}$/i.test(c)?c:'#D39E90';
+  return {nome:nomeDoTom(hex), hex};
+}
+const ehNomeSugerido = n => Object.values(TONS).some(t=>t.nome===n);
+
+/* Mesma carta de tons e mesmo cálculo do site — ver index.html. */
+const TONS = {
+  blush:{nome:'Blush',hex:'#F6D0C6'}, rose:{nome:'Rosé',hex:'#D39E90'},
+  vinho:{nome:'Vinho',hex:'#501E27'}, terracota:{nome:'Terracota',hex:'#A66958'},
+  marfim:{nome:'Marfim',hex:'#F2EADD'}, offwhite:{nome:'Off-white',hex:'#FCF5F2'},
+  branco:{nome:'Branco',hex:'#FFFFFF'}, areia:{nome:'Areia',hex:'#CCC2BE'},
+  nude:{nome:'Nude',hex:'#C8AE9B'}, taupe:{nome:'Taupe',hex:'#B5A392'},
+  camel:{nome:'Camel',hex:'#C8A776'}, chocolate:{nome:'Chocolate',hex:'#5A3A22'},
+  oliva:{nome:'Oliva',hex:'#8C9A8E'}, jeans:{nome:'Jeans',hex:'#6E86A3'},
+  marinho:{nome:'Azul-marinho',hex:'#26334D'}, grafite:{nome:'Grafite',hex:'#3E444B'},
+  cinza:{nome:'Cinza',hex:'#8E8C8A'}, preto:{nome:'Preto',hex:'#1A1A1A'}
+};
+function okLab(hex){
+  const s=String(hex).replace('#','');
+  const v=i=>{const x=parseInt(s.slice(i,i+2),16)/255;
+    return x<=0.04045?x/12.92:Math.pow((x+0.055)/1.055,2.4);};
+  const r=v(0),g=v(2),b=v(4);
+  const l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b);
+  const m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b);
+  const q=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+  return [0.2104542553*l+0.7936177850*m-0.0040720468*q,
+          1.9779984951*l-2.4285922050*m+0.4505937099*q,
+          0.0259040371*l+0.7827717662*m-0.8086757660*q];
+}
+function nomeDoTom(hex){
+  try{
+    const a=okLab(hex); let melhor='Cor única', menor=Infinity;
+    for(const t of Object.values(TONS)){
+      const b=okLab(t.hex);
+      const d=Math.hypot((a[0]-b[0])*0.55,a[1]-b[1],a[2]-b[2]);
+      if(d<menor){ menor=d; melhor=t.nome; }
+    }
+    return melhor;
+  }catch(_){ return 'Cor única'; }
+}
+
+/* Lê o formulário para dentro do rascunho. */
+function colher(){
+  const d=app.rascunho;
+  const num=v=>{
+    let t=String(v??'').trim();
+    if(!t) return null;
+    if(t.includes(',')) t=t.replace(/\./g,'').replace(',','.');      // 1.299,90
+    else if(/^\d{1,3}(\.\d{3})+$/.test(t)) t=t.replace(/\./g,''); // 1.299
+    const n=parseFloat(t);
+    return isNaN(n)?null:Math.round(n*100)/100;
+  };
+  d.nome=$('#f_nome').value.trim();
+  d.categoria=$('#f_cat').value;
+  d.tecido=$('#f_tecido').value.trim();
+  d.preco=num($('#f_preco').value);
+  d.preco_de=num($('#f_de').value);
+  d.descricao=$('#f_desc').value.trim();
+  d.destaque=parseInt($('#f_destaque').value,10)||5;
+  d.novo=$('#f_novo').checked;
+  d.ativo=$('#f_ativo').checked;
+  const tams=[],estoque={};
+  $$('[data-tam]').forEach(i=>{
+    const nome=i.value.trim();
+    if(!nome) return;
+    tams.push(nome);
+    const q=$(`[data-qtd="${i.dataset.tam}"]`).value.trim();
+    if(q!=='') estoque[nome]=Math.max(0,parseInt(q,10)||0);
+  });
+  d.tams=tams; d.estoque=estoque;
+  $$('[data-cor]').forEach(i=>{ const n=+i.dataset.cor;
+    if(d.cores[n]) d.cores[n].hex=i.value; });
+  $$('[data-cornome]').forEach(i=>{ const n=+i.dataset.cornome;
+    if(d.cores[n]) d.cores[n].nome=i.value.trim()||nomeDoTom(d.cores[n].hex); });
+}
+
+async function salvarPeca(dados,silencioso){
+  if(!silencioso){
+    if(!dados.nome||dados.nome.length<2) throw new Error('Dê um nome à peça.');
+    if(!(dados.preco>0)) throw new Error('Informe o preço.');
+    if(!dados.tams.length) throw new Error('Adicione ao menos um tamanho.');
+  }
+  return api('/api/admin/produtos',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(dados)});
+}
+
+/* ── Envio de fotos, com encolhimento no navegador ───────────── */
+$('#entradaFoto').addEventListener('change',async e=>{
+  const arquivos=[...e.target.files]; e.target.value='';
+  if(!arquivos.length) return;
+  avisar(`Enviando ${arquivos.length} foto${arquivos.length>1?'s':''}…`);
+  for(const arq of arquivos){
+    try{
+      const blob=await encolher(arq);
+      const url=await enviarAoCloudinary(blob);
+      app.rascunho.fotos.push(url); pintarFotos();
+    }catch(err){ avisar(err.message||'Não deu para enviar a foto.'); }
+  }
+  avisar('Fotos prontas');
+});
+
+/* A foto vai direto do navegador para o Cloudinary — não passa pela
+   nossa função. Por isso o primeiro passo é pedir uma autorização
+   assinada (válida por poucos minutos) e só depois enviar a foto
+   para o endereço deles, não para o nosso servidor. */
+async function enviarAoCloudinary(blob){
+  const auth=await api('/api/admin/assinatura-upload',{method:'GET'});
+  const forma=new FormData();
+  forma.append('file',blob);
+  forma.append('api_key',auth.apiKey);
+  forma.append('timestamp',auth.timestamp);
+  forma.append('signature',auth.assinatura);
+  forma.append('folder',auth.folder);
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${auth.cloudName}/image/upload`,{method:'POST',body:forma});
+  const d=await r.json();
+  if(!r.ok) throw new Error(d.error?.message||'O Cloudinary recusou a foto.');
+  return d.secure_url;
+}
+
+/* Reduz para 1200px de largura antes de subir: economiza dados da
+   loja e faz a vitrine carregar rápido no celular da cliente. */
+function encolher(arquivo,largura=1200,qualidade=.82){
+  return new Promise((ok,falha)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const escala=Math.min(1,largura/img.width);
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*escala); c.height=Math.round(img.height*escala);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      c.toBlob(b=>b?ok(b):falha(new Error('Não deu para processar a imagem.')),'image/jpeg',qualidade);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror=()=>falha(new Error('Arquivo de imagem inválido.'));
+    img.src=URL.createObjectURL(arquivo);
+  });
+}
+
+/* ── Pedidos ─────────────────────────────────────────────────── */
+function abaPedidos(){
+  const r=app.resumo||{vendas:0,total:0};
+  const aDespachar=app.pedidos.filter(p=>p.status==='pago').length;
+  $('#conteudo').innerHTML=`
+    <div class="cartoes">
+      <div class="kpi"><b>${r.vendas}</b><span>vendas no mês</span></div>
+      <div class="kpi"><b>${brl(r.total)}</b><span>faturamento do mês</span></div>
+      <div class="kpi"><b>${aDespachar}</b><span>a despachar</span></div>
+    </div>
+    ${aDespachar?`<div class="aviso"><strong>${aDespachar} ${aDespachar===1?'pedido pago espera':'pedidos pagos esperam'} envio.</strong> Clique no pedido para lançar o código de rastreio.</div>`:''}
+    ${app.pedidos.length?`<table class="tabela"><thead><tr>
+      <th>Pedido</th><th>Cliente</th><th>Peças</th><th>Valor</th><th>Situação</th><th></th>
+    </tr></thead><tbody>${app.pedidos.map(p=>{
+      const itens=(typeof p.itens==='string'?JSON.parse(p.itens):p.itens)||[];
+      const d=new Date(p.criado_em);
+      return `<tr>
+        <td data-rot="Pedido"><strong>${escapar(p.referencia)}</strong><br>
+          <span style="font-size:.74rem;color:var(--texto-suave)">${d.toLocaleDateString('pt-BR')}</span></td>
+        <td data-rot="Cliente">${escapar(p.nome||'—')}<br>
+          <span style="font-size:.74rem;color:var(--texto-suave)">${escapar(p.email||'')}</span></td>
+        <td data-rot="Peças" style="font-size:.8rem">${itens.map(i=>`${i.qtd}× ${escapar(i.nome)}${i.tam?` (${escapar(i.tam)})`:''}`).join('<br>')}</td>
+        <td data-rot="Valor">${brl(p.valor)}<br><span style="font-size:.74rem;color:var(--texto-suave)">${escapar(p.forma||'')}</span></td>
+        <td data-rot="Situação"><span class="selo ${escapar(p.status)}">${escapar(p.status)}</span>
+          ${p.rastreio?`<br><span style="font-size:.72rem;color:var(--texto-suave)">${escapar(p.rastreio)}</span>`:''}</td>
+        <td data-rot=""><button class="btn btn-linha btn-mini" data-pedido="${escapar(p.referencia)}">Abrir</button></td>
+      </tr>`;}).join('')}</tbody></table>`
+    :`<div class="vazio"><h3>Nenhum pedido ainda</h3><p>Assim que a primeira venda cair, ela aparece aqui.</p></div>`}`;
+  $$('[data-pedido]').forEach(b=>b.onclick=()=>abrirPedido(app.pedidos.find(p=>p.referencia===b.dataset.pedido)));
+}
+
+function abrirPedido(p){
+  const itens=(typeof p.itens==='string'?JSON.parse(p.itens):p.itens)||[];
+  const ent=(typeof p.entrega==='string'?JSON.parse(p.entrega):p.entrega)||{};
+  const situacoes=['pendente','pago','enviado','entregue','cancelado'];
+  $('#formPedido').innerHTML=`
+    <h2>${escapar(p.referencia)}</h2>
+    <p style="color:var(--texto-suave);font-size:.86rem;margin-top:-8px">${new Date(p.criado_em).toLocaleString('pt-BR')} · ${escapar(p.forma||'')}${p.parcelas>1?` em ${p.parcelas}x`:''}</p>
+    <div style="background:#fff;border:1px solid var(--borda);border-radius:2px;padding:16px;margin:18px 0">
+      <strong>${escapar(p.nome||'—')}</strong><br>
+      <span style="font-size:.86rem;color:var(--texto-suave)">${escapar(p.email||'')}${ent.telefone?' · '+escapar(ent.telefone):''}</span>
+      ${ent.endereco?`<div style="margin-top:10px;font-size:.88rem">${escapar(ent.endereco)}<br>${escapar(ent.cidade||'')} · ${escapar(ent.uf||'')} · ${escapar(ent.cep||'')}</div>`:''}
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--borda);font-size:.88rem">
+        ${itens.map(i=>`${i.qtd}× ${escapar(i.nome)}${i.tam?` · tam. ${escapar(i.tam)}`:''}`).join('<br>')}
+      </div>
+      <div style="margin-top:12px;font-family:'Prata',serif;font-size:1.15rem;color:var(--marca)">${brl(p.valor)}</div>
+    </div>
+    <div class="campos">
+      <div class="campo"><label for="p_status">Situação</label>
+        <select id="p_status">${situacoes.map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="campo"><label for="p_rastreio">Código de rastreio</label>
+        <input id="p_rastreio" value="${escapar(p.rastreio||'')}" placeholder="AA123456789BR"></div>
+    </div>
+    <button class="btn btn-principal btn-largo" style="margin-top:20px" id="p_salvar">Salvar</button>
+    ${ent.telefone?`<a class="btn btn-linha btn-largo" style="margin-top:8px" target="_blank" rel="noopener"
+      href="https://wa.me/55${String(ent.telefone).replace(/\D/g,'')}?text=${encodeURIComponent(`Olá! Aqui é da Cabide Imperial. Seu pedido ${p.referencia} já está a caminho 💛`)}">Avisar no WhatsApp</a>`:''}`;
+  $('#modalPedido').classList.add('on');
+  $('#p_salvar').onclick=async()=>{
+    const b=$('#p_salvar'); b.disabled=true; b.textContent='Salvando…';
+    try{
+      await api('/api/admin/pedidos',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({referencia:p.referencia,status:$('#p_status').value,rastreio:$('#p_rastreio').value.trim()})});
+      fecharModais(); avisar('Pedido atualizado'); await carregar();
+    }catch(e){ avisar(e.message); b.disabled=false; b.textContent='Salvar'; }
+  };
+}
+
+iniciar();
+</script>
+</body>
+</html>
