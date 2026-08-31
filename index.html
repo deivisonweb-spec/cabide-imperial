@@ -289,6 +289,7 @@ section[id]{scroll-margin-top:104px}
 .look .insta{position:absolute;inset:0;display:grid;place-items:center;color:#fff;opacity:0;transition:.35s;z-index:2}
 .look:hover .insta{opacity:1}
 .look .insta svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.3}
+.look-credito{position:absolute;left:8px;bottom:8px;z-index:2;background:rgba(80,30,39,.72);color:#fff;font-size:.66rem;letter-spacing:.05em;padding:4px 9px;border-radius:100px;pointer-events:none}
 
 /* ============ DEPOIMENTOS ============ */
 .depos{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
@@ -1165,12 +1166,26 @@ $('#grade').addEventListener('click',e=>{
 
 /* ══════════════════ PEÇA DO HERO E LOOKBOOK ══════════════════ */
 $('#pecaHero').innerHTML = `<img src="${PRODUTOS[4].foto}" alt="${PRODUTOS[4].nome}">`;
-function montarLookbook(){
-  $('#lookbookGrade').innerHTML = PRODUTOS.slice(0,8).map(p=>`
-  <a class="look" href="${CONFIG.instagram}" target="_blank" rel="noopener" aria-label="Ver no Instagram">
-    <img src="${p.foto}" alt="${p.nome}" loading="lazy">
+async function montarLookbook(){
+  const el = $('#lookbookGrade');
+  let itens = [];
+  if(location.protocol.startsWith('http')){
+    try{ const d = await chamarApi('/api/lookbook', null, 'GET'); itens = d.itens||[]; }
+    catch(_){ /* sem resposta do servidor, tenta de novo na próxima visita */ }
+  }
+  if(!itens.length){
+    el.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--texto-suave);padding:24px 0">Em breve, fotos de estilo por aqui.</p>`;
+    return;
+  }
+  el.innerHTML = itens.map(it=>{
+    const handle = (it.instagram||'').replace(/^@/,'');
+    const link = handle ? `https://instagram.com/${handle}` : CONFIG.instagram;
+    return `<a class="look" href="${link}" target="_blank" rel="noopener" aria-label="Ver no Instagram${handle?' de @'+handle:''}">
+    <img src="${it.foto}" alt="${it.legenda||'Look Cabide Imperial'}" loading="lazy">
     <span class="insta"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg></span>
-  </a>`).join('');
+    ${handle?`<span class="look-credito">@${handle}</span>`:''}
+  </a>`;
+  }).join('');
 }
 montarLookbook();
 
@@ -1918,7 +1933,7 @@ async function carregarCatalogo(){
       p.foto=fotoDe(p,i);
       PRODUTOS.push(p);
     });
-    estado.mostrar=8; render(); montarCategorias(); montarLookbook();
+    estado.mostrar=8; render(); montarCategorias();
     $('#pecaHero').innerHTML=`<img src="${PRODUTOS[0].foto}" alt="${PRODUTOS[0].nome}">`;
   }catch(_){ /* sem resposta do servidor, seguimos com o catálogo local */ }
 }
