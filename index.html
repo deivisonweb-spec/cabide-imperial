@@ -234,7 +234,7 @@ section[id]{scroll-margin-top:104px}
 .cat::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(80,30,39,0) 0%,rgba(80,30,39,.58) 52%,rgba(80,30,39,.90) 78%,rgba(80,30,39,.93) 100%);z-index:-1}
 .cat:hover::before{transform:scale(1.07)}
 .cat b{color:#fff;font-family:'Prata',serif;font-size:1.25rem;font-weight:400}
-.cat span{display:block;color:var(--acento-claro);font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;margin-top:4px}
+.cat span{display:block;color:rgba(255,255,255,.88);font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;margin-top:4px}
 
 /* ============ VITRINE (assinatura: a arara) ============ */
 .filtros{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-bottom:14px}
@@ -1082,9 +1082,13 @@ const zapLink = txt=>`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent
 
 /* ══════════════════ CATEGORIAS ══════════════════ */
 function montarCategorias(){
-  $('#cats').innerHTML = CATEGORIAS.map(c=>{
-    const p = PRODUTOS.find(x=>x.cat===c.id) || PRODUTOS[0];
-    return `<button class="cat" data-cat="${c.id}" style="--bg:url('${p?p.foto:''}')">
+  $('#cats').innerHTML = CATEGORIAS.map((c,i)=>{
+    // Sem peça cadastrada nessa categoria ainda: mostra um cartão
+    // ilustrado próprio (mesmo gerador dos produtos), nunca a foto
+    // de outra categoria emprestada — evita confundir a cliente.
+    const p = PRODUTOS.find(x=>x.cat===c.id);
+    const foto = p ? p.foto : fotoDe({nome:c.nome}, i);
+    return `<button class="cat" data-cat="${c.id}" style="--bg:url('${foto}')">
       <span><b>${c.nome}</b><span>${c.sub}</span></span></button>`;
   }).join('');
 }
