@@ -298,6 +298,11 @@ section[id]{scroll-margin-top:104px}
 .depo p{margin:0 0 18px;color:var(--texto-suave);font-size:.95rem}
 .depo b{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;font-weight:500}
 .estrelas{color:var(--acento-texto);letter-spacing:.22em;font-size:.85rem;margin-bottom:12px}
+.estrelas-input{display:flex;gap:6px}
+.estrelas-input button{font-size:1.5rem;line-height:1;color:var(--borda-campo);transition:color .15s}
+.estrelas-input button.on,.estrelas-input button:hover{color:var(--acento-texto)}
+.avaliar-area{border-top:1px solid var(--borda);margin-top:12px;padding-top:12px}
+.depo-vazio{grid-column:1/-1;text-align:center;color:var(--texto-suave);padding:20px 0}
 
 /* ============ NEWSLETTER ============ */
 .news{background:linear-gradient(160deg,var(--fundo-rose) 0%,var(--fundo-rose-forte) 100%);text-align:center;padding:clamp(48px,7vw,86px) 0}
@@ -740,26 +745,7 @@ section[id]{scroll-margin-top:104px}
       <div class="ornamento"><span class="eyebrow">Elas contam</span></div>
       <h2>Clientes que voltam</h2>
     </div>
-    <div class="depos revela">
-      <div class="depo">
-        <span class="aspas">“</span>
-        <div class="estrelas">★★★★★</div>
-        <p>Achei o vestido perfeito para o casamento da minha irmã: elegante, confortável e do jeitinho que eu gosto. Chegou em quatro dias em Aracaju.</p>
-        <b>Rebeca M. · Aracaju/SE</b>
-      </div>
-      <div class="depo">
-        <span class="aspas">“</span>
-        <div class="estrelas">★★★★★</div>
-        <p>Eu sempre penava para achar saias bonitas no meu tamanho. Aqui encontrei três de uma vez e o tecido é ótimo. Virei cliente.</p>
-        <b>Ana Paula S. · Maceió/AL</b>
-      </div>
-      <div class="depo">
-        <span class="aspas">“</span>
-        <div class="estrelas">★★★★★</div>
-        <p>O atendimento pelo WhatsApp fez toda a diferença. Me ajudaram a escolher o tamanho certo e ainda mandaram fotos reais da peça.</p>
-        <b>Débora L. · Recife/PE</b>
-      </div>
-    </div>
+    <div class="depos revela" id="depoimentosGrade"></div>
   </div>
 </section>
 
@@ -1188,6 +1174,31 @@ async function montarLookbook(){
   }).join('');
 }
 montarLookbook();
+
+/* ══════════════════ DEPOIMENTOS REAIS ═══════════════════════════
+   Só mostra avaliação de pedido de verdade — nunca depoimento
+   fictício. Sem nenhuma ainda, a seção fica discreta em vez de
+   mentir com nomes inventados. */
+async function montarDepoimentos(){
+  const el = $('#depoimentosGrade'); if(!el) return;
+  let itens = [];
+  if(location.protocol.startsWith('http')){
+    try{ const d = await chamarApi('/api/avaliacoes', null, 'GET'); itens = d.itens||[]; }
+    catch(_){ /* sem resposta do servidor, tenta de novo na próxima visita */ }
+  }
+  if(!itens.length){
+    el.innerHTML = `<p class="depo-vazio">As primeiras avaliações de clientes aparecem aqui em breve.</p>`;
+    return;
+  }
+  el.innerHTML = itens.slice(0,6).map(it=>`
+    <div class="depo">
+      <span class="aspas">“</span>
+      <div class="estrelas">${'★'.repeat(it.nota)}${'☆'.repeat(5-it.nota)}</div>
+      <p>${String(it.comentario).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</p>
+      <b>${it.nome}${it.cidade?` · ${it.cidade}${it.uf?'/'+it.uf:''}`:''}</b>
+    </div>`).join('');
+}
+montarDepoimentos();
 
 /* ══════════════════ MODAL PRODUTO ══════════════════ */
 let sel = {};
@@ -1783,11 +1794,14 @@ function pintarConta(){
   else abaPedidos();
 }
 
+const ELEGIVEIS_AVALIACAO=['pago','enviado','entregue'];
 function abaPedidos(){
   const p=estado.pedidos||[];
   $('#a_conteudo').innerHTML = p.length ? p.map(o=>{
     const itens=(typeof o.itens==='string'?JSON.parse(o.itens):o.itens)||[];
     const d=new Date(o.criado_em);
+    const idSeguro=o.referencia.replace(/[^a-zA-Z0-9]/g,'');
+    const podeAvaliar=ELEGIVEIS_AVALIACAO.includes(o.status) && !o.avaliado;
     return `<div class="pedido">
       <div class="pedido-topo">
         <div><div class="pedido-ref">${o.referencia}</div>
@@ -1796,6 +1810,9 @@ function abaPedidos(){
       </div>
       <div class="pedido-itens">${itens.map(i=>`${i.qtd}× ${i.nome}${i.tam?` · tam. ${i.tam}`:''}`).join('<br>')}</div>
       <div class="pedido-fim"><span>${o.forma}${o.parcelas>1?` em ${o.parcelas}x`:''}</span><strong>${brl(Number(o.valor))}</strong></div>
+      ${podeAvaliar?`<button class="btn btn-linha btn-largo" style="margin-top:12px" data-avaliar="${o.referencia}">Avaliar esta compra</button>
+        <div class="avaliar-area" id="avaliar-${idSeguro}" hidden></div>`:''}
+      ${o.avaliado?`<p style="margin-top:12px;font-size:.78rem;color:var(--acento-texto)">✓ Você já avaliou esta compra. Obrigada!</p>`:''}
     </div>`;
   }).join('') : `<div class="conta-vazio">
       <h3>Nenhum pedido ainda</h3>
@@ -1804,6 +1821,38 @@ function abaPedidos(){
     </div>`;
   const v=$('#a_verColecao');
   if(v) v.onclick=()=>{ fecharModal($('#modalConta')); $('#colecao').scrollIntoView({behavior:'smooth'}); };
+  $$('[data-avaliar]').forEach(b=>b.onclick=()=>abrirFormAvaliacao(b.dataset.avaliar));
+}
+
+function abrirFormAvaliacao(referencia){
+  const idSeguro=referencia.replace(/[^a-zA-Z0-9]/g,'');
+  const area=$('#avaliar-'+idSeguro); if(!area) return;
+  if(!area.hidden){ area.hidden=true; return; }
+  area.hidden=false;
+  area.innerHTML=`
+    <div class="opcao"><span class="rot">Sua nota</span>
+      <div class="estrelas-input" id="estIn-${idSeguro}">${[1,2,3,4,5].map(n=>`<button type="button" data-nota="${n}" aria-label="${n} estrela${n>1?'s':''}">★</button>`).join('')}</div>
+    </div>
+    <div class="campo full" style="margin-top:10px">
+      <label for="coment-${idSeguro}">Conte como foi</label>
+      <textarea id="coment-${idSeguro}" rows="3" placeholder="O tecido, o caimento, a entrega — o que quiser contar"></textarea>
+    </div>
+    <button class="btn btn-principal" style="margin-top:12px" id="enviarAval-${idSeguro}">Enviar avaliação</button>`;
+  let nota=0;
+  const botoes=$$(`#estIn-${idSeguro} button`);
+  botoes.forEach(b=>b.onclick=()=>{ nota=+b.dataset.nota; botoes.forEach(x=>x.classList.toggle('on',+x.dataset.nota<=nota)); });
+  $(`#enviarAval-${idSeguro}`).onclick=async()=>{
+    const btn=$(`#enviarAval-${idSeguro}`);
+    const comentario=$(`#coment-${idSeguro}`).value.trim();
+    if(!nota) return avisar('Escolha de 1 a 5 estrelas');
+    if(comentario.length<10) return avisar('Escreva um pouco mais sobre sua experiência');
+    btn.disabled=true; btn.textContent='Enviando…';
+    try{
+      await chamarApi('/api/conta/avaliar',{referencia,nota,comentario});
+      avisar('Avaliação enviada — obrigada!');
+      await carregarConta(); pintarConta(); montarDepoimentos();
+    }catch(e){ avisar(e.message); btn.disabled=false; btn.textContent='Enviar avaliação'; }
+  };
 }
 
 function abaDados(){
