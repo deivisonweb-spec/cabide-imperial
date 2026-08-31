@@ -14,7 +14,7 @@ export const handler = rota(async (event) => {
     const linhas = await listarProdutos();
 
     const produtos = linhas.map(p => ({
-      id: p.id,
+      id: Number(p.id),  // o banco devolve como texto; o site inteiro compara por número
       nome: p.nome,
       cat: p.categoria,
       preco: Number(p.preco),
