@@ -1398,7 +1398,6 @@ function pintarCheckout(){
         <div class="campo full"><label for="c_nome">Nome completo</label><input id="c_nome" value="${estado.dados.nome||''}"><span class="erro">Digite seu nome completo</span></div>
         <div class="campo"><label for="c_email">E-mail</label><input id="c_email" type="email" value="${estado.dados.email||''}"><span class="erro">Digite um e-mail válido</span></div>
         <div class="campo"><label for="c_tel">WhatsApp</label><input id="c_tel" inputmode="numeric" placeholder="(79) 9 9999-9999" value="${estado.dados.tel||''}"><span class="erro">Digite um número com DDD</span></div>
-        <div class="campo"><label for="c_cpf">CPF</label><input id="c_cpf" inputmode="numeric" placeholder="000.000.000-00" value="${estado.dados.cpf||''}"><span class="erro">Digite os 11 dígitos do CPF</span></div>
         <div class="campo"><label for="c_cep">CEP</label><input id="c_cep" inputmode="numeric" placeholder="49000-000" value="${estado.dados.cep||''}"><span class="erro">Digite os 8 dígitos do CEP</span></div>
         <div class="campo full"><label for="c_end">Endereço, número e complemento</label><input id="c_end" value="${estado.dados.end||''}"><span class="erro">Informe o endereço com número</span></div>
         <div class="campo"><label for="c_cid">Cidade</label><input id="c_cid" value="${estado.dados.cid||''}"><span class="erro">Informe a cidade</span></div>
@@ -1507,6 +1506,29 @@ function pintarPagamento(totalPix){
 
 /* ── Pix ─────────────────────────────────────────────────────── */
 async function pixReal(area){
+  const cpfLimpo=(estado.dados.cpf||'').replace(/\D/g,'');
+  if(cpfLimpo.length!==11){
+    area.innerHTML=`<div class="pix-area" style="text-align:left">
+      <p style="font-size:.86rem;color:var(--texto-suave);margin:0 0 14px">Para gerar o Pix, o Banco Central exige identificar quem está pagando. Informe seu CPF:</p>
+      <div class="campo full"><label for="pix_cpf">CPF</label>
+        <input id="pix_cpf" inputmode="numeric" placeholder="000.000.000-00" value="${estado.dados.cpf||''}">
+        <span class="erro" id="pix_cpf_erro" style="display:none">Digite os 11 dígitos do CPF</span></div>
+      <button class="btn btn-principal btn-largo" style="margin-top:16px" id="pix_continuar">Continuar</button>
+    </div>`;
+    mascaraCpf($('#pix_cpf'));
+    $('#pix_cpf').focus();
+    $('#pix_continuar').onclick=()=>{
+      const limpo=$('#pix_cpf').value.replace(/\D/g,'');
+      if(limpo.length!==11){
+        $('#pix_cpf_erro').style.display='block';
+        $('#pix_cpf').closest('.campo').classList.add('invalido');
+        return;
+      }
+      estado.dados.cpf=$('#pix_cpf').value;
+      pixReal(area);
+    };
+    return;
+  }
   area.innerHTML=`<div class="carregando"><span class="giro"></span> Gerando seu código Pix…</div>`;
   try{
     const d=await chamarApi('/api/criar-pix',{itens:itensDoPedido(),cupom:estado.cupom,cliente:estado.dados});
@@ -1632,11 +1654,9 @@ function desenharQR(cv){
 }
 /* máscaras e validação */
 function mascaras(){
-  const tel=$('#c_tel'), cpf=$('#c_cpf'), cep=$('#c_cep');
+  const tel=$('#c_tel'), cep=$('#c_cep');
   tel.oninput=e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);
     e.target.value=v.replace(/^(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2');};
-  cpf.oninput=e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);
-    e.target.value=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})(\d{1,2})$/,'$1-$2');};
   cep.oninput=e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);
     e.target.value=v.replace(/(\d{5})(\d)/,'$1-$2');};
 }
@@ -1647,14 +1667,15 @@ function mascarasCartao(){
 }
 function marcar(id,ok){ $('#'+id).closest('.campo').classList.toggle('invalido',!ok); return ok; }
 function validar(){
+  // O CPF não é pedido aqui: só é exigido mais adiante, se a cliente
+  // escolher pagar no Pix — regra do Banco Central, não do cartão.
   const d={nome:$('#c_nome').value.trim(), email:$('#c_email').value.trim(), tel:$('#c_tel').value,
-           cpf:$('#c_cpf').value, cep:$('#c_cep').value, end:$('#c_end').value.trim(),
+           cpf:estado.dados.cpf||'', cep:$('#c_cep').value, end:$('#c_end').value.trim(),
            cid:$('#c_cid').value.trim(), uf:$('#c_uf').value};
   let ok=true;
   ok = marcar('c_nome', d.nome.split(' ').filter(Boolean).length>=2) && ok;
   ok = marcar('c_email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) && ok;
   ok = marcar('c_tel', d.tel.replace(/\D/g,'').length>=10) && ok;
-  ok = marcar('c_cpf', d.cpf.replace(/\D/g,'').length===11) && ok;
   ok = marcar('c_cep', d.cep.replace(/\D/g,'').length===8) && ok;
   ok = marcar('c_end', d.end.length>=6) && ok;
   ok = marcar('c_cid', d.cid.length>=2) && ok;
