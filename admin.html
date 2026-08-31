@@ -208,7 +208,7 @@ const paraCampo=v=>(v===null||v===undefined||v==='')?'':Number(v).toFixed(2).rep
 const CATEGORIAS=[['vestidos','Vestidos'],['saias','Saias'],['blusas','Blusas'],
   ['conjuntos','Conjuntos'],['camisas','Camisas'],['plus','Plus Size']];
 
-const app={admin:null,aba:'pecas',produtos:[],pedidos:[],lookbook:[],resumo:null,rascunho:null,rascunhoLook:null};
+const app={admin:null,aba:'pecas',produtos:[],pedidos:[],lookbook:[],avaliacoes:[],resumo:null,rascunho:null,rascunhoLook:null};
 
 function avisar(msg){
   const t=$('#toast'); t.textContent=msg; t.classList.add('on');
@@ -272,8 +272,8 @@ function telaSemAcesso(c){
 /* ── Carregar dados ──────────────────────────────────────────── */
 async function carregar(){
   try{
-    const [p,o,l]=await Promise.all([api('/api/admin/produtos'),api('/api/admin/pedidos'),api('/api/admin/lookbook')]);
-    app.produtos=p.produtos; app.pedidos=o.pedidos; app.resumo=o.resumo; app.lookbook=l.itens;
+    const [p,o,l,a]=await Promise.all([api('/api/admin/produtos'),api('/api/admin/pedidos'),api('/api/admin/lookbook'),api('/api/admin/avaliacoes')]);
+    app.produtos=p.produtos; app.pedidos=o.pedidos; app.resumo=o.resumo; app.lookbook=l.itens; app.avaliacoes=a.itens;
   }catch(e){ avisar(e.message); }
   pintar();
 }
@@ -284,12 +284,14 @@ function pintar(){
       <button class="aba ${app.aba==='pecas'?'on':''}" data-aba="pecas">Peças (${app.produtos.length})</button>
       <button class="aba ${app.aba==='pedidos'?'on':''}" data-aba="pedidos">Pedidos (${app.pedidos.length})</button>
       <button class="aba ${app.aba==='lookbook'?'on':''}" data-aba="lookbook">Lookbook (${app.lookbook.length})</button>
+      <button class="aba ${app.aba==='avaliacoes'?'on':''}" data-aba="avaliacoes">Avaliações (${app.avaliacoes.length})</button>
     </div>
     <div id="conteudo"></div>`;
   $$('[data-aba]').forEach(b=>b.onclick=()=>{ app.aba=b.dataset.aba; pintar(); });
   if(app.aba==='pecas') abaPecas();
   else if(app.aba==='pedidos') abaPedidos();
-  else abaLookbook();
+  else if(app.aba==='lookbook') abaLookbook();
+  else abaAvaliacoes();
 }
 
 /* ── Peças ───────────────────────────────────────────────────── */
@@ -805,6 +807,37 @@ $('#entradaFotoLook').addEventListener('change',async e=>{
     avisar('Foto pronta');
   }catch(err){ avisar(err.message||'Não deu para enviar a foto.'); }
 });
+
+/* ── Avaliações ──────────────────────────────────────────────── */
+function abaAvaliacoes(){
+  const escondidas=app.avaliacoes.filter(a=>!a.visivel).length;
+  $('#conteudo').innerHTML=`
+    <div class="aviso">Só clientes que realmente compraram podem avaliar — isso já é garantido pelo sistema. Aqui você pode esconder uma avaliação da vitrine, se precisar, sem apagar o histórico.</div>
+    ${app.avaliacoes.length?`<table class="tabela"><thead><tr>
+      <th>Cliente</th><th>Nota</th><th>Comentário</th><th>Pedido</th><th>Vitrine</th><th></th>
+    </tr></thead><tbody>${app.avaliacoes.map(a=>{
+      const d=new Date(a.criado_em);
+      return `<tr>
+        <td data-rot="Cliente"><strong>${escapar(a.nome)}</strong>${a.cidade?`<br><span style="font-size:.74rem;color:var(--texto-suave)">${escapar(a.cidade)}${a.uf?'/'+escapar(a.uf):''}</span>`:''}<br>
+          <span style="font-size:.72rem;color:var(--texto-suave)">${d.toLocaleDateString('pt-BR')}</span></td>
+        <td data-rot="Nota">${'★'.repeat(a.nota)}${'☆'.repeat(5-a.nota)}</td>
+        <td data-rot="Comentário" style="font-size:.86rem;max-width:340px">${escapar(a.comentario)}</td>
+        <td data-rot="Pedido"><span style="font-size:.78rem">${escapar(a.pedido_referencia)}</span></td>
+        <td data-rot="Vitrine"><span class="selo ${a.visivel?'pago':'pausa'}">${a.visivel?'visível':'escondida'}</span></td>
+        <td data-rot=""><button class="btn btn-linha btn-mini" data-alternaraval="${a.id}" data-estado="${a.visivel}">${a.visivel?'Esconder':'Mostrar'}</button></td>
+      </tr>`;}).join('')}</tbody></table>`
+    :`<div class="vazio"><h3>Nenhuma avaliação ainda</h3><p>Assim que uma cliente avaliar uma compra, aparece aqui.</p></div>`}`;
+
+  $$('[data-alternaraval]').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    try{
+      await api('/api/admin/avaliacoes',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({id:b.dataset.alternaraval, visivel: b.dataset.estado!=='true'})});
+      avisar('Atualizado');
+      await carregar();
+    }catch(e){ avisar(e.message); b.disabled=false; }
+  });
+}
 
 iniciar();
 </script>
