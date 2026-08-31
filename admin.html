@@ -188,8 +188,17 @@ img{max-width:100%;display:block}
   </div>
 </div>
 
+<div class="modal" id="modalLook">
+  <div class="modal-fundo" data-fecha></div>
+  <div class="modal-caixa" style="max-width:520px">
+    <button class="fechar" data-fecha aria-label="Fechar">×</button>
+    <div id="formLook"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <input type="file" id="entradaFoto" accept="image/*" multiple hidden>
+<input type="file" id="entradaFotoLook" accept="image/*" hidden>
 
 <script>
 const $=(s,e=document)=>e.querySelector(s);
@@ -199,7 +208,7 @@ const paraCampo=v=>(v===null||v===undefined||v==='')?'':Number(v).toFixed(2).rep
 const CATEGORIAS=[['vestidos','Vestidos'],['saias','Saias'],['blusas','Blusas'],
   ['conjuntos','Conjuntos'],['camisas','Camisas'],['plus','Plus Size']];
 
-const app={admin:null,aba:'pecas',produtos:[],pedidos:[],resumo:null,rascunho:null};
+const app={admin:null,aba:'pecas',produtos:[],pedidos:[],lookbook:[],resumo:null,rascunho:null,rascunhoLook:null};
 
 function avisar(msg){
   const t=$('#toast'); t.textContent=msg; t.classList.add('on');
@@ -263,8 +272,8 @@ function telaSemAcesso(c){
 /* ── Carregar dados ──────────────────────────────────────────── */
 async function carregar(){
   try{
-    const [p,o]=await Promise.all([api('/api/admin/produtos'),api('/api/admin/pedidos')]);
-    app.produtos=p.produtos; app.pedidos=o.pedidos; app.resumo=o.resumo;
+    const [p,o,l]=await Promise.all([api('/api/admin/produtos'),api('/api/admin/pedidos'),api('/api/admin/lookbook')]);
+    app.produtos=p.produtos; app.pedidos=o.pedidos; app.resumo=o.resumo; app.lookbook=l.itens;
   }catch(e){ avisar(e.message); }
   pintar();
 }
@@ -274,10 +283,13 @@ function pintar(){
     <div class="abas">
       <button class="aba ${app.aba==='pecas'?'on':''}" data-aba="pecas">Peças (${app.produtos.length})</button>
       <button class="aba ${app.aba==='pedidos'?'on':''}" data-aba="pedidos">Pedidos (${app.pedidos.length})</button>
+      <button class="aba ${app.aba==='lookbook'?'on':''}" data-aba="lookbook">Lookbook (${app.lookbook.length})</button>
     </div>
     <div id="conteudo"></div>`;
   $$('[data-aba]').forEach(b=>b.onclick=()=>{ app.aba=b.dataset.aba; pintar(); });
-  app.aba==='pecas'?abaPecas():abaPedidos();
+  if(app.aba==='pecas') abaPecas();
+  else if(app.aba==='pedidos') abaPedidos();
+  else abaLookbook();
 }
 
 /* ── Peças ───────────────────────────────────────────────────── */
@@ -679,6 +691,120 @@ function abrirPedido(p){
     }catch(e){ avisar(e.message); b.disabled=false; b.textContent='Salvar'; }
   };
 }
+
+/* ── Lookbook ────────────────────────────────────────────────── */
+function abaLookbook(){
+  $('#conteudo').innerHTML=`
+    <div class="aviso">Fotos de clientes ou de estilo, para inspirar — não precisam ser uma peça à venda. Aparecem na seção "Lookbook" da loja, cada uma podendo linkar para o Instagram de quem está usando.</div>
+    <div class="barra">
+      <span style="font-size:.8rem;color:var(--texto-suave)">${app.lookbook.filter(i=>i.ativo).length} no ar · ${app.lookbook.filter(i=>!i.ativo).length} pausadas</span>
+      <button class="btn btn-ouro" id="novoLook">Nova foto</button>
+    </div>
+    <div class="grade" id="gradeLook"></div>`;
+  $('#novoLook').onclick=()=>abrirLook(null);
+
+  const g=$('#gradeLook');
+  if(!app.lookbook.length){
+    g.outerHTML=`<div class="vazio"><h3>Nenhuma foto ainda</h3><p>Clique em “Nova foto” para começar o lookbook.</p></div>`;
+    return;
+  }
+  g.innerHTML=app.lookbook.map(it=>`
+    <article class="peca ${it.ativo?'':'pausada'}">
+      <div class="peca-foto">
+        <img src="${escapar(it.foto)}" alt="${escapar(it.legenda||'')}" loading="lazy">
+        <div class="marcas">
+          ${it.instagram?`<span class="marca">@${escapar(it.instagram)}</span>`:''}
+          ${it.ativo?'':'<span class="marca pausa">Pausada</span>'}
+        </div>
+      </div>
+      <div class="peca-corpo">
+        <h3 style="font-size:.92rem">${escapar(it.legenda)||'Sem legenda'}</h3>
+        <span class="meta">${it.instagram?'Crédito: @'+escapar(it.instagram):'Sem Instagram vinculado'}</span>
+      </div>
+      <div class="peca-acoes">
+        <button class="btn btn-linha btn-mini" data-editarlook="${it.id}">Editar</button>
+        <button class="btn btn-linha btn-mini" data-pausarlook="${it.id}">${it.ativo?'Pausar':'Ativar'}</button>
+      </div>
+    </article>`).join('');
+
+  $$('[data-editarlook]').forEach(b=>b.onclick=()=>abrirLook(app.lookbook.find(i=>i.id==b.dataset.editarlook)));
+  $$('[data-pausarlook]').forEach(b=>b.onclick=async()=>{
+    const it=app.lookbook.find(x=>x.id==b.dataset.pausarlook);
+    b.disabled=true;
+    try{
+      await api('/api/admin/lookbook',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({...it,ativo:!it.ativo})});
+      avisar(it.ativo?'Pausada — saiu do lookbook':'No ar de novo');
+      await carregar();
+    }catch(e){ avisar(e.message); b.disabled=false; }
+  });
+}
+
+function abrirLook(it){
+  app.rascunhoLook = it ? JSON.parse(JSON.stringify(it)) : {foto:'',instagram:'',legenda:'',ordem:0,ativo:true};
+  $('#modalLook').classList.add('on');
+  pintarFormLook();
+}
+
+function pintarFormLook(){
+  const d=app.rascunhoLook;
+  $('#formLook').innerHTML=`
+    <h2>${d.id?'Editar foto':'Nova foto do lookbook'}</h2>
+    <p class="ajuda" style="font-size:.78rem;color:var(--texto-suave);margin:0 0 16px">Não precisa ser uma peça do catálogo — pode ser uma foto de cliente ou de estilo, só para inspirar.</p>
+    <div id="fotoLookArea" style="max-width:200px;margin-bottom:20px"></div>
+    <div class="campos">
+      <div class="campo full"><label for="fl_legenda">Legenda (opcional)</label>
+        <input id="fl_legenda" value="${escapar(d.legenda||'')}" placeholder="Look de festa"></div>
+      <div class="campo full"><label for="fl_insta">Instagram de quem está na foto (opcional)</label>
+        <input id="fl_insta" value="${escapar(d.instagram||'')}" placeholder="@usuaria ou link do instagram"></div>
+      <div class="campo"><label>Etiqueta</label>
+        <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--texto)">
+          <input type="checkbox" id="fl_ativo" ${d.ativo!==false?'checked':''} style="width:auto"> Visível na loja</label></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:26px;flex-wrap:wrap">
+      <button class="btn btn-principal" style="flex:1;min-width:160px" id="fl_salvar">Salvar</button>
+      ${d.id?`<button class="btn btn-perigo" id="fl_apagar">Apagar</button>`:''}
+    </div>`;
+  pintarFotoLook();
+  $('#fl_salvar').onclick=async()=>{
+    const b=$('#fl_salvar'); b.disabled=true; b.textContent='Salvando…';
+    try{
+      if(!d.foto) throw new Error('Envie uma foto.');
+      d.legenda=$('#fl_legenda').value.trim();
+      d.instagram=$('#fl_insta').value.trim();
+      d.ativo=$('#fl_ativo').checked;
+      await api('/api/admin/lookbook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+      fecharModais(); avisar('Foto salva'); await carregar();
+    }catch(e){ avisar(e.message); b.disabled=false; b.textContent='Salvar'; }
+  };
+  const ap=$('#fl_apagar');
+  if(ap) ap.onclick=async()=>{
+    if(!confirm('Apagar esta foto do lookbook?')) return;
+    try{ await api('/api/admin/lookbook?id='+d.id,{method:'DELETE'}); fecharModais(); avisar('Foto apagada'); await carregar(); }
+    catch(e){ avisar(e.message); }
+  };
+}
+
+function pintarFotoLook(){
+  const d=app.rascunhoLook;
+  $('#fotoLookArea').innerHTML = d.foto
+    ? `<div class="foto-item"><img src="${escapar(d.foto)}" alt=""><button id="tirarFotoLook" aria-label="Remover foto">×</button></div>`
+    : `<button class="enviar-foto" id="btEnviarFotoLook" style="width:100%">+ foto</button>`;
+  const bt=$('#btEnviarFotoLook'); if(bt) bt.onclick=()=>$('#entradaFotoLook').click();
+  const tirar=$('#tirarFotoLook'); if(tirar) tirar.onclick=()=>{ d.foto=''; pintarFotoLook(); };
+}
+
+$('#entradaFotoLook').addEventListener('change',async e=>{
+  const arq=e.target.files[0]; e.target.value='';
+  if(!arq) return;
+  avisar('Enviando foto…');
+  try{
+    const blob=await encolher(arq);
+    const url=await enviarAoCloudinary(blob);
+    app.rascunhoLook.foto=url; pintarFotoLook();
+    avisar('Foto pronta');
+  }catch(err){ avisar(err.message||'Não deu para enviar a foto.'); }
+});
 
 iniciar();
 </script>
